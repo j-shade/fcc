@@ -20,14 +20,11 @@ public class DES {
 		int i;
 		length = 8 - data.length % 8;
 		padding = new byte[length];
-		// padding[0] = (byte)0x80; //padding of 128 in dec, or 1000 0000
-		padding[0] = 1;
+		padding[0] = (byte)0x80; //padding of 128 in dec, or 1000 0000
 
 		for (i = 1; i < length; i++){
 			padding[i] = 0;
 		}
-
-		System.out.print("padding: " + new String(padding));
 
 		byte[] tmp = new byte[data.length + length];
 		byte[] block = new byte[8];
@@ -39,7 +36,6 @@ public class DES {
 		for ( i = 0; i < (data.length + length); i++ ) {
 			//iterate over 8 bit blocks
 			if (i > 0 && i % 8 == 0) {
-				System.out.println("i: " + i + " , " + new String(block));
 				block = desCipher(block,key, false);
 				System.arraycopy(block, 0, tmp, i - 8, block.length);
 			}
@@ -53,7 +49,6 @@ public class DES {
 			}
 		}
 		if ( block.length == 8 ){
-			System.out.println("block: " + new String(block));
 			block = desCipher(block,key, false);
 			System.arraycopy(block, 0, tmp, i - 8, block.length);
 		}
@@ -76,7 +71,6 @@ public class DES {
 		for ( i = 0; i < data.length; i++ ) {
 			if (i > 0 && i % 8 == 0) {
 				block = desCipher(block,key, true);
-				System.out.println("i: " + i + " , " + new String(block));
 				System.arraycopy(block, 0, tmp, i - 8, block.length);
 			}
 			if (i < data.length) {
@@ -84,7 +78,6 @@ public class DES {
 			}
 		}
 		block = desCipher(block,key, true);
-		System.out.println("block: " + new String(block));
 		System.arraycopy(block, 0, tmp, i - 8, block.length);
 
 		tmp = removePadding(tmp);

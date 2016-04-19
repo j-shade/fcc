@@ -19,14 +19,14 @@ public class Main {
 	 * @param args
      */
 	public static void main(String[] args){
-		String input = readFile("toencrypt.txt", false);
+		String input = readFile("testfile_SDES.txt", false);
 		String key = readFile("key.txt", false);
 
-		System.out.println("Encrypting the message");
+		System.out.println("Encrypting the message..");
 		byte[] encrypted = DES.encrypt(input.getBytes(), key.getBytes());
 		writeFile(new String(encrypted), "encrypted.txt"); //save the file
 
-		System.out.println("\nDecrypting message..");
+		System.out.println("\nDecrypting the message..");
 	 	String toDecrypt = readFile("encrypted.txt", true);
 		byte[] decrypted = DES.decrypt(toDecrypt.getBytes(), key.getBytes());
 		writeFile(new String(decrypted), "decrypted.txt");

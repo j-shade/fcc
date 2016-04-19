@@ -13,9 +13,9 @@ public class Affine
     //
     //
     ////
-    private static final int MODULO = 128; //95 for all lower case, upper case letters, numbers and symbols
     private static final int STARTNUM = 0;
     private static final int ENDNUM = 127;
+    private static final int MODULO = ENDNUM - STARTNUM + 1; //95 for all lower case, upper case letters, numbers and symbols
     private static int[] validKeys = new int[MODULO];
 
     ////

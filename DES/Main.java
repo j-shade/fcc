@@ -4,90 +4,90 @@
 // Fundamental Concepts of Cryptography
 
 import java.io.*;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 public class Main {
 
 	/**
 	 *
 	 * @param args
-     */
+	 */
 	public static void main(String[] args){
-		String input = readFile("testfile_SDES.txt", false);
-		String key = readFile("key.txt", false);
-
-		System.out.println("Encrypting the message..");
-		byte[] encrypted = DES.encrypt(input.getBytes(), key.getBytes());
-		writeFile(new String(encrypted), "encrypted.txt"); //save the file
-
-		System.out.println("\nDecrypting the message..");
-	 	String toDecrypt = readFile("encrypted.txt", true);
-		byte[] decrypted = DES.decrypt(toDecrypt.getBytes(), key.getBytes());
-		writeFile(new String(decrypted), "decrypted.txt");
-		// System.out.println("\nDecrypted message: \n" + new String(dec));
-	}
-
-    /**
-     *
-     * @param inFile
-	 * @param encrypted
-     * @return
-     */
-	private static String readFile(String inFile, boolean encrypted)
-	{
-		StringBuffer stringBuffer = new StringBuffer();
-		String line;
-
 		try{
-			File toencrypt = new File(inFile);
-			FileReader file = new FileReader(toencrypt);
-			// BufferedReader fileReader = new BufferedReader(
-			// 	new InputStreamReader(
-            //           new FileInputStream(toencrypt)
-			// ));
-			BufferedReader fileReader = new BufferedReader(file);
-			while ((line = fileReader.readLine()) != null) {
-				stringBuffer.append(line);
-				stringBuffer.append("\n");
-				// if ( !encrypted ){
-				// 	stringBuffer.append("\n");
-				// }
-			}
-			int last = stringBuffer.lastIndexOf("\n");
-            if (last >= 0)
-            {
-                stringBuffer.delete(last, stringBuffer.length());
-            }
-			fileReader.close();
+			byte[] input = readFile(new File("testfile_SDES.txt"));
+			byte[] key = readFile(new File("key.txt"));
+
+			System.out.println("Encrypting the message..");
+			byte[] encrypted = DES.encrypt(input, key);
+			writeFile(encrypted, "encrypted.txt"); //save the file
+
+			System.out.println("\nDecrypting the message..");
+			byte[] toDecrypt = readFile(new File("encrypted.txt"));
+			byte[] decrypted = DES.decrypt(toDecrypt, key);
+			writeFile(decrypted, "decrypted.txt");
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		return stringBuffer.toString();
 	}
 
-    /**
-     * @param fileName
-     * @param toWrite
-     */
-	private static void writeFile(String toWrite, String fileName)
-	{
+	/**
+	 * @param file
+	 * @return byte[] data
+	 */
+	private static byte[] readFile(File file) throws IOException {
+		// Open file
+		RandomAccessFile f = new RandomAccessFile(file, "r");
 		try {
-			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
-			    new FileOutputStream(fileName)));
-			// BufferedWriter writer = new BufferedWriter(new FileWriter("encrypted.txt"));
-			writer.write(toWrite);
-			writer.close();
+			// Get and check length
+			long longlength = f.length();
+			int length = (int) longlength;
+			if (length != longlength)
+				throw new IOException("File size >= 2 GB");
+			// Read file and return data
+			byte[] data = new byte[length];
+			f.readFully(data);
+			return data;
 		}
-		catch ( IOException e) {
+		finally {
+			f.close();
+		}
+	}
+
+	/**
+	 * @param fileName
+	 * @param toWrite
+	 */
+	private static void writeFile(byte[] toWrite, String fileName)
+	{
+		FileOutputStream fileStream = null;
+		File file;
+
+		try {
+			file = new File(fileName);
+			fileStream = new FileOutputStream(file);
+
+			// if file doesnt exists, then create it
+			if (!file.exists()) {
+				file.createNewFile();
+			}
+
+			fileStream.write(toWrite);
+			fileStream.flush();
+			fileStream.close();
+
+		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			try {
+				if (fileStream != null) {
+					fileStream.close();
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

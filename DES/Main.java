@@ -22,11 +22,13 @@ public class Main {
 			System.out.println("Encrypting the message..");
 			byte[] encrypted = DES.encrypt(input, key);
 			writeFile(encrypted, "encrypted.txt"); //save the file
+			System.out.println("Done.");
 
 			System.out.println("\nDecrypting the message..");
 			byte[] toDecrypt = readFile(new File("encrypted.txt"));
 			byte[] decrypted = DES.decrypt(toDecrypt, key);
 			writeFile(decrypted, "decrypted.txt");
+			System.out.println("Done.");
 		}
 		catch (IOException e) {
 			e.printStackTrace();

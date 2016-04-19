@@ -1,4 +1,4 @@
-// Written by Jeremy Shade, 15128706
+    // Written by Jeremy Shade, 15128706
 // 28/03/2016
 // Curtin University
 // Fundamental Concepts of Cryptography

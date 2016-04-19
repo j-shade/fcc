@@ -1,1 +1,5 @@
-The Iris dataset is used as an illustrative example for AFS algebras through
+feature value of $x$. The following three linguist fuzzy rules have been obtained for Class 1
+to build the AFS fuzzy classifier in Section 4.
+
+is \emph{wide sepal}, and $x_{4}$ is \emph{narrow petal}, then $x$
+belongs to Class 1;

@@ -15,26 +15,28 @@ public class DES {
      * @return
      */
 	public static byte[] encrypt(byte[] data, byte[] inKey) {
-		int lenght=0;
+		int length=0;
 		byte[] padding;
 		int i;
-		lenght = 8 - data.length % 8;
-		padding = new byte[lenght];
-		padding[0] = (byte)0x80;
-		System.out.println(new String(padding));
+		length = 8 - data.length % 8;
+		padding = new byte[length];
+		// padding[0] = (byte)0x80; //padding of 128 in dec, or 1000 0000
+		padding[0] = 1;
 
-		for (i = 1; i < lenght; i++){
+		for (i = 1; i < length; i++){
 			padding[i] = 0;
 		}
 
-		byte[] tmp = new byte[data.length + lenght];
+		System.out.print("padding: " + new String(padding));
+
+		byte[] tmp = new byte[data.length + length];
 		byte[] block = new byte[8];
 
 		key = generateSubKeys(inKey);
 
 		int count = 0;
 		//iterate over total length of file including padding
-		for ( i = 0; i < (data.length + lenght); i++ ) {
+		for ( i = 0; i < (data.length + length); i++ ) {
 			//iterate over 8 bit blocks
 			if (i > 0 && i % 8 == 0) {
 				System.out.println("i: " + i + " , " + new String(block));
@@ -44,7 +46,6 @@ public class DES {
 			//if its just the data, append it to the block
 			if (i < data.length) {
 				block[i % 8] = data[i];
-				// System.out.print((char)data[i]);
 			//otherwise, use padding
 			} else {
 				block[i % 8] = padding[count % 8];
@@ -78,8 +79,9 @@ public class DES {
 				System.out.println("i: " + i + " , " + new String(block));
 				System.arraycopy(block, 0, tmp, i - 8, block.length);
 			}
-			if (i < data.length)
+			if (i < data.length) {
 				block[i % 8] = data[i];
+			}
 		}
 		block = desCipher(block,key, true);
 		System.out.println("block: " + new String(block));
@@ -93,7 +95,7 @@ public class DES {
 	/**
 	 *
 	 * @param block
-	 * @param inKeys
+	 * @param inKey
 	 * @param decrypt
      * @return
      */
@@ -109,17 +111,17 @@ public class DES {
 
 		for (int i = 0; i < 16; i++) {
 			byte[] tmpR = R;
-			if( decrypt ) {
+			if( decrypt )
+			{
 				R = feistel(R, inKey[15-i]);
 			} else {
-				R = feistel(R,inKey[i]);
+				R = feistel(R, inKey[i]);
 			}
 			R = xor(L, R);
 			L = tmpR;
 		}
 
 		tmp = mergeBits(R, initPerm.length/2, L, initPerm.length/2);
-
 		tmp = permute(tmp, initPermInverse);
 		return tmp;
 	}

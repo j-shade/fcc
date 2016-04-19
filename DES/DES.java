@@ -29,7 +29,7 @@ public class DES {
 		byte[] tmp = new byte[data.length + length];
 		byte[] block = new byte[8];
 
-		key = generateSubKeys(inKey);
+		key = generateKey(inKey);
 
 		int count = 0;
 		//iterate over total length of file including padding
@@ -66,7 +66,7 @@ public class DES {
 		byte[] tmp = new byte[data.length];
 		byte[] block = new byte[8];
 
-		key = generateSubKeys(inKey);
+		key = generateKey(inKey);
 
 		for ( i = 0; i < data.length; i++ ) {
 			if (i > 0 && i % 8 == 0) {
@@ -224,7 +224,7 @@ public class DES {
 	 * @param key
 	 * @return
      */
-	private static byte[][] generateSubKeys(byte[] key) {
+	private static byte[][] generateKey(byte[] key) {
 		byte[][] tmp = new byte[16][];
 		byte[] tmpK = permute(key, permChoice1);
 

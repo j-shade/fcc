@@ -51,6 +51,9 @@ public class Main
         decrypted = Affine.decrypt(toDecrypt, a, b);
         writeFile(new String(decrypted), "decrypted.txt");//save the file
         System.out.println("\n\n\nDone!");
+
+        System.out.println("Graph of original file:");
+        printGraph("testfile_affine_cipher.txt");
     }
 
     /**
@@ -108,4 +111,46 @@ public class Main
 			e.printStackTrace();
 		}
 	}
+
+    private static void printGraph(String fileName){
+        String fileContents = "";
+        int[] charCount = new int[256];
+        try {
+            FileReader file = new FileReader(fileName);
+            BufferedReader reader = new BufferedReader(file);
+            StringBuilder builder = new StringBuilder();
+            String line;
+            // System.out.println("File contents: ");
+            // System.out.println();
+            while ((line = reader.readLine()) != null){
+                for (int ii=0; ii<line.length(); ii++){
+                    int charNum = (int)line.charAt(ii);
+                    charCount[charNum]++;
+                }
+                // System.out.println(line);
+            }
+        } catch (IOException e){
+            System.err.format("%s\n", e);
+        }
+        System.out.println();
+        System.out.println("Now the graph: ");
+        System.out.println();
+        System.out.println("Char | Count \t | ");
+        System.out.println("..................................................");
+        int maxCount = 0;
+        for (int ii=0; ii<127; ii++){
+            if (charCount[ii] != 0){
+                String numHash = "";
+                if (charCount[ii] >= maxCount){
+                    maxCount = charCount[ii];
+                }
+                for (int jj=0; jj<charCount[ii]; jj++){
+                    numHash += "# ";
+                }
+                System.out.println((char)ii +"    | " + charCount[ii] + " \t | " + numHash);
+                // System.out.println("char: " + (char)ii + ", char Count: " + charCount[ii]);
+            }
+        }
+        System.out.println("..................................................");
+    }
 }

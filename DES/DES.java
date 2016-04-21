@@ -15,11 +15,11 @@ public class DES {
      * @return
      */
 	public static byte[] encrypt(byte[] data, byte[] inKey) {
-		int paddingLength=0;
-		byte[] padding;
+		// int paddingLength = 0;
+		// byte[] padding;
 		int ii;
-		paddingLength = 8 - data.length % 8;
-		padding = new byte[paddingLength];
+		int paddingLength = 8 - data.length % 8;
+		byte[] padding = new byte[paddingLength];
          //padding of 128 in dec, or 1000 0000
 		padding[0] = (byte)0x80;
         //pad the rest with OnesAndZeroes method
@@ -37,7 +37,7 @@ public class DES {
 		for ( ii = 0; ii < (data.length + paddingLength); ii++ ) {
 			//iterate over 8 bit blocks
 			if ( ( ii > 0 ) && ( ii % 8 == 0 ) ) {
-				block = desCipher(block,KEY, false);
+				block = desCipher(block,KEY, false); //decryption is FALSE
 				System.arraycopy(block, 0, encryptedData, ii - 8, block.length);
 			}
 			//if its just the data, append it to the block
@@ -49,8 +49,9 @@ public class DES {
 				paddingCount++;
 			}
 		}
+		//encrypt the final block
 		if ( block.length == 8 ){
-			block = desCipher(block,KEY, false);
+			block = desCipher(block,KEY, false); //decryption is FALSE
 			System.arraycopy(block, 0, encryptedData, ii - 8, block.length);
 		}
 		return encryptedData;
@@ -63,26 +64,28 @@ public class DES {
      * @return
      */
 	public static byte[] decrypt(byte[] data, byte[] inKey) {
-		int i;
+		int ii;
 		byte[] decryptedData = new byte[data.length];
 		byte[] block = new byte[8];
 
-		KEY = generateKey(inKey);
-
-		for ( i = 0; i < data.length; i++ ) {
-			if (i > 0 && i % 8 == 0) {
-				block = desCipher(block,KEY, true);
-				System.arraycopy(block, 0, decryptedData, i - 8, block.length);
+		KEY = generateKey(inKey); //get keys
+		//iterate over the data
+		for ( ii = 0; ii < data.length; ii++ ) {
+			//if 8 bit block
+			if ( ( ii > 0 ) && ( ii % 8 == 0)  ) {
+				block = desCipher(block,KEY, true); //decrypt is TRUE
+				System.arraycopy(block, 0, decryptedData, ii - 8, block.length);
 			}
-			if (i < data.length) {
-				block[i % 8] = data[i];
+			if (ii < data.length) {
+				block[ii % 8] = data[ii];
 			}
 		}
+		//decrypt the final block
 		block = desCipher(block,KEY, true);
-		System.arraycopy(block, 0, decryptedData, i - 8, block.length);
-
+		System.arraycopy(block, 0, decryptedData, ii - 8, block.length);
+		//remove padding
 		decryptedData = removePadding(decryptedData);
-
+		//return the data
 		return decryptedData;
 	}
 
@@ -98,17 +101,18 @@ public class DES {
 		byte[] L = new byte[block.length / 2];
 		byte[] R = new byte[block.length / 2];
 
+		//permutate the current block with the first permutation
 		currentBlock = permute(block, initPerm);
-
+		//choose left and right halves
 		L = getBits(currentBlock, 0, initPerm.length/2);
 		R = getBits(currentBlock, initPerm.length/2, initPerm.length/2);
-
         //iterate for 16 rounds to switch for every round
         for (int ii = 0; ii < 16; ii++) {
 	        switchFunction(L,R,inKey,decrypt, ii);
         }
-
+		//merge the final halves before last round
 		currentBlock = mergeBits(R, initPerm.length/2, L, initPerm.length/2);
+		//permutate the final round with the IP^-1
 		currentBlock = permute(currentBlock, initPermInverse);
 		return currentBlock;
 	}
@@ -121,15 +125,15 @@ public class DES {
     *
     */
     private static void switchFunction(byte[] L, byte[] R, byte[][] inKey, boolean decrypt, int ii){
-		byte[] tempR = R;
-		if( decrypt )
+		byte[] tempR = R; //create a backup of hte old right half
+		if( decrypt ) //if decrypting start at round 15 and work our way back
 		{
 			R = feistel(R, inKey[15-ii]);
-		} else {
+		} else { //otherwise start at 0
 			R = feistel(R, inKey[ii]);
 		}
-		R = xor(L, R);
-		L = tempR;
+		R = xor(L, R); //xor the left and right half and set it to right
+		L = tempR; //set left to the right half
     }
 
 	/**
@@ -140,9 +144,13 @@ public class DES {
      */
 	private static byte[] feistel(byte[] R, byte[] KEY) {
 		byte[] feistelBlock;
+        //permutate the right half with the E-bit selection table
 		feistelBlock = permute(R, eTable);
-		feistelBlock = xor(feistelBlock, KEY);
+        //exlusive OR this with the key
+        feistelBlock = xor(feistelBlock, KEY);
+        //circular rotate left
 		feistelBlock = shift(feistelBlock);
+        //permutate itself with the feistelPerm table
 		feistelBlock = permute(feistelBlock, feistelPerm);
 		return feistelBlock;
 	}
@@ -153,8 +161,8 @@ public class DES {
 	 * @return
      */
 	private static byte[] shift(byte[] in) {
-		in = separateBytes(in, 6);
-		byte[] out = new byte[in.length / 2];
+		in = separateBytes(in, 6); //split the input
+		byte[] shiftedBits = new byte[in.length / 2];
 		int halfByte = 0;
 		for (int ii = 0; ii < in.length; ii++) {
 			byte valByte = in[ii];
@@ -163,13 +171,14 @@ public class DES {
 			//grab middle 4 values
 			int c = valByte >> 3 & 0x000F;
 			//get value from s-box
-			int val = sBoxes[ii][r][c];
-			if (ii % 2 == 0)
-				halfByte = val;
-			else
-				out[ii / 2] = (byte) (16 * halfByte + val);
+			int sBoxVal = sBoxes[ii][r][c];
+			if (ii % 2 == 0){
+				halfByte = sBoxVal;
+			} else {
+				shiftedBits[ii / 2] = (byte) (16 * halfByte + sBoxVal);
+			}
 		}
-		return out;
+		return shiftedBits;
 	}
 
 	/**
@@ -181,14 +190,14 @@ public class DES {
 	private static byte[] separateBytes(byte[] in, int length) {
 		//get the number of bytes to seperate
 		int numOfBytes = (8 * in.length - 1) / length + 1;
-		byte[] out = new byte[numOfBytes]; //create holder
+		byte[] sepBytes = new byte[numOfBytes]; //create holder
 		for (int ii = 0; ii < numOfBytes; ii++) {
 			for (int jj = 0; jj < length; jj++) {
 				int val = getBit(in, length * ii + jj);
-				setBit(out, 8 * ii + jj, val);
+				setBit(sepBytes, 8 * ii + jj, val);
 			}
 		}
-		return out;
+		return sepBytes;
 	}
 
 	/**
@@ -201,19 +210,22 @@ public class DES {
      */
 	private static byte[] mergeBits(byte[] a, int aLen, byte[] b, int bLen) {
 		int numOfBytes = (aLen + bLen - 1) / 8 + 1;
-		byte[] out = new byte[numOfBytes];
+		byte[] mergedBits = new byte[numOfBytes]; //create holder for the merged block
 		int j = 0;
+		//merge the first half
 		for (int i = 0; i < aLen; i++) {
 			int val = getBit(a, i);
-			setBit(out, j, val);
+			setBit(mergedBits, j, val);
 			j++;
 		}
+		//merge the second half
 		for (int i = 0; i < bLen; i++) {
 			int val = getBit(b, i);
-			setBit(out, j, val);
+			setBit(mergedBits, j, val);
 			j++;
 		}
-		return out;
+		//return merged
+		return mergedBits;
 	}
 
 	/**
@@ -222,15 +234,16 @@ public class DES {
 	 * @return
      */
 	private static byte[] removePadding(byte[] input) {
-		int paddingCount = 0;
-		int i = input.length - 1;
-		while (input[i] == 0) {
+		int paddingCount = 0; //start padding count
+		int i = input.length - 1; //get the length to iterate over
+		while (input[i] == 0) { //remove all 0's until the first padded byte
 			paddingCount++;
 			i--;
 		}
 		byte[] unpaddedBlock = new byte[input.length - paddingCount - 1];
+		//copy the original input into the unpadded block at the length
 		System.arraycopy(input, 0, unpaddedBlock, 0, unpaddedBlock.length);
-		return unpaddedBlock;
+		return unpaddedBlock; //return the padded block
 	}
 
 	/**
@@ -239,19 +252,21 @@ public class DES {
 	 * @return
      */
 	private static byte[][] generateKey(byte[] inKey) {
-		byte[][] keyArray = new byte[16][];
-		byte[] tempKey = permute(inKey, permChoice1);
+		byte[][] keyArray = new byte[16][]; //craete holder
+		byte[] tempKey = permute(inKey, permChoice1); //permute the input key with PC1
 
+		//return the byte array of the key with PC1
 		byte[] C = getBits(tempKey, 0, permChoice1.length/2);
+		//return the byte array of the second half of key with PC1
 		byte[] D = getBits(tempKey, permChoice1.length/2, permChoice1.length/2);
-
+		//iterate over the 16 rounds
 		for (int ii = 0; ii < 16; ii++) {
-
+			//rotate C and D left keyShift[ii] number of passes
 			C = rotateLeft(C, 28, keyShift[ii]);
 			D = rotateLeft(D, 28, keyShift[ii]);
-
+			//merge C and D together
 			byte[] cd = mergeBits(C, 28, D, 28);
-
+			//permutate by PC2
 			keyArray[ii] = permute(cd, permChoice2);
 		}
 
@@ -268,8 +283,12 @@ public class DES {
 		int posByte = pos / 8;
 		int posBit = pos % 8;
 		byte tmpByte = data[posByte];
+		//right 0111 1111 then bit-wise AND with tmpbyte, then bitwise and
+		//with 1111 1111
 		tmpByte = (byte) (((0xFF7F >> posBit) & tmpByte) & 0x00FF);
+		//create the new byte by left shifting
 		byte newByte = (byte) ((val << (8 - (posBit + 1))) | tmpByte);
+		//set the new byte in the data position wanted
 		data[posByte] = newByte;
 	}
 
@@ -283,6 +302,7 @@ public class DES {
 		int posByte = pos / 8;
 		int posBit = pos % 8;
 		byte tmpByte = data[posByte];
+		//right shift the data we want by the val bit-wise AND with 0000 0001
 		int bit = tmpByte >> (8 - (posBit + 1)) & 0x0001;
 		return bit;
 	}
@@ -297,8 +317,11 @@ public class DES {
 	private static byte[] rotateLeft(byte[] input, int length, int pass) {
 		int numBytes = (length - 1) / 8 + 1;
 		byte[] rotatedLeft = new byte[numBytes];
+		//iterate over the length to circular rotate left
 		for (int ii = 0; ii < length; ii++) {
+			//get the bit we want
 			int value = getBit(input, (ii + pass) % length);
+			//set the bit we want at ii
 			setBit(rotatedLeft, ii, value);
 		}
 		return rotatedLeft;
@@ -312,10 +335,13 @@ public class DES {
      * @return
      */
 	private static byte[] getBits(byte[] input, int pos, int n) {
-		int numOfBytes = (n - 1) / 8 + 1;
+		int numOfBytes = (n - 1) / 8 + 1; //get total number of bytes
 		byte[] returnBits = new byte[numOfBytes];
+		//iterate over n
 		for (int i = 0; i < n; i++) {
+			//get the bit we want
 			int val = getBit(input, pos + i);
+			//set the bit we got
 			setBit(returnBits, i, val);
 		}
 		return returnBits;
@@ -329,10 +355,13 @@ public class DES {
      * @return
      */
 	private static byte[] permute(byte[] input, int[] table) {
-		int numBytes = (table.length - 1) / 8 + 1;
+		int numBytes = (table.length - 1) / 8 + 1; //get total number of bytes
 		byte[] permuted = new byte[numBytes];
+		//iterate over the table
 		for (int i = 0; i < table.length; i++) {
+			//get the bit we want
 			int val = getBit(input, table[i] - 1);
+			//set the acquired bit
 			setBit(permuted, i, val);
 		}
 		return permuted;
@@ -347,6 +376,7 @@ public class DES {
      */
 	private static byte[] xor(byte[] a, byte[] b) {
 		byte[] axorb = new byte[a.length];
+		//iterate over a and bit-wise AND each bit with b
 		for (int i = 0; i < a.length; i++) {
 			axorb[i] = (byte) (a[i] ^ b[i]);
 		}

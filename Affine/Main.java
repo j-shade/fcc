@@ -1,3 +1,9 @@
+//Written by Jeremy Shade
+//29/03/2016
+//Curtin University
+//Fundamental Concepts of Crytography
+
+
 import java.io.*;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -67,6 +73,7 @@ public class Main
 		try{
 			File toencrypt = new File(inFile);
 			FileReader file = new FileReader(toencrypt);
+            //read the file
 			BufferedReader fileReader = new BufferedReader(
 				new InputStreamReader(
                       new FileInputStream(toencrypt)
@@ -77,11 +84,11 @@ public class Main
 				stringBuffer.append(line);
                 stringBuffer.append("\n");
 			}
-            int last = stringBuffer.lastIndexOf("\n");
-            if (last >= 0)
-            {
-                stringBuffer.delete(last, stringBuffer.length());
-            }
+            // int last = stringBuffer.lastIndexOf("\n");
+            // if (last >= 0)
+            // {
+            //     stringBuffer.delete(last, stringBuffer.length()); //delete the last new line
+            // }
 			fileReader.close();
 		}
 		catch (IOException e) {
@@ -98,9 +105,9 @@ public class Main
 	private static void writeFile(String toWrite, String fileName)
 	{
 		try {
+            //create file writer
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
 			    new FileOutputStream(fileName)));
-			// BufferedWriter writer = new BufferedWriter(new FileWriter("encrypted.txt"));
 			writer.write(toWrite);
 			writer.close();
 		}
@@ -117,14 +124,15 @@ public class Main
             BufferedReader reader = new BufferedReader(file);
             StringBuilder builder = new StringBuilder();
             String line;
-            // System.out.println("File contents: ");
-            // System.out.println();
-            while ((line = reader.readLine()) != null){
-                for (int ii=0; ii<line.length(); ii++){
+            //iterate over the file
+            while ((line = reader.readLine()) != null)
+            {
+                for (int ii=0; ii<line.length(); ii++)
+                {
+                    //append the char number as a decimal into the array
                     int charNum = (int)line.charAt(ii);
-                    charCount[charNum]++;
+                    charCount[charNum]++; //increment the character count
                 }
-                // System.out.println(line);
             }
         } catch (IOException e){
             System.err.format("%s\n", e);

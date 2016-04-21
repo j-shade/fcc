@@ -117,14 +117,19 @@ public class Affine
                 }
             }
         } else { //print possible values for b with regards to a
-            for (int ii = 0; ii<validKeys.length; ii++){
-                if ( GCD(validKeys[ii], b) == 1){
-                    System.out.print(validKeys[ii]);
-                    if (ii != validKeys.length - 1){
-                        System.out.print(", ");
-                    }
-                }
+            for (int ii = 1; ii<validKeys.length; ii++){
+              System.out.print(ii);
+              if (ii != validKeys.length - 1){
+                  System.out.print(", ");
+              }
             }
+            //     if ( GCD(validKeys[ii], b) == 1){
+            //         System.out.print(validKeys[ii]);
+            //         if (ii != validKeys.length - 1){
+            //             System.out.print(", ");
+            //         }
+            //     }
+            // }
         }
     }
 
@@ -142,13 +147,7 @@ public class Affine
             }
         }
         if (b > 0 && a < 0){
-            int contains = Arrays.binarySearch(validKeys, b);
-            if (contains > 0 ){
-                isValidKey = true;
-            }
-        }
-        if (a > 0 && b > 0){
-            if ( GCD(a,b) == 1 ){
+            if ( b >= STARTNUM && b <= ENDNUM ){
                 isValidKey = true;
             }
         }

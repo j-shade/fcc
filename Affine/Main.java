@@ -34,9 +34,6 @@ public class Main
             if ( !Affine.checkKey(-1, b) ){
                 throw new IllegalArgumentException(b + " is not valid as a key!");
             }
-            if ( !Affine.checkKey(a,b) ){
-                throw new IllegalArgumentException(a + " and " + b + " are not coprime.");
-            }
         }
 
         //ENCRYPTION//
